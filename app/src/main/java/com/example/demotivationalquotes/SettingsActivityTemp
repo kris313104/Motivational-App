@@ -1,0 +1,143 @@
+package com.example.demotivationalquotes;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TimePickerDialog;
+import android.content.Intent;
+import android.os.Build;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.TimePicker;
+import android.widget.Toast;
+
+import java.util.Calendar;
+import java.util.Locale;
+
+public class SettingsActivity extends AppCompatActivity {
+
+    int hour = -1;
+    int minute = -1;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_settings);
+        createNotificationChannel();
+
+        Button backButton = findViewById(R.id.notifyButtonBack);
+
+        backButton.setOnClickListener(view -> {
+            startActivity(new Intent(SettingsActivity.this, MainActivity.class));
+        });
+
+
+        Button selectTimeButton = findViewById(R.id.selectTimeButton);
+
+        selectTimeButton.setOnClickListener(view -> {
+            TimePickerDialog.OnTimeSetListener onTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
+                @Override
+                public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                    hour = selectedHour;
+                    minute = selectedMinute;
+
+                    selectTimeButton.setText(String.format(Locale.getDefault(), "%02d:%02d", hour, minute));
+                }
+            };
+
+            int style = AlertDialog.THEME_DEVICE_DEFAULT_DARK;
+
+            TimePickerDialog timePickerDialog = new TimePickerDialog(this, style, onTimeSetListener, hour, minute, true);
+
+            timePickerDialog.setTitle(("Select time for a daily reminder"));
+            timePickerDialog.show();
+        });
+
+        Button notifyButton = findViewById(R.id.notifyButton);
+
+        notifyButton.setOnClickListener(view -> {
+            if (hour != -1) {
+                Toast.makeText(this, "Reminder set!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(SettingsActivity.this, ReminderBroadcast.class);
+
+
+                PendingIntent pendingIntent;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    pendingIntent = PendingIntent.getBroadcast(this,
+                            0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+
+                }else {
+                    pendingIntent = PendingIntent.getBroadcast(this,
+                            0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                }
+
+                AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+
+                long timeAtButtonClick = System.currentTimeMillis();
+                long threeSecondsInMillis = 1000 * 1;
+
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, timeAtButtonClick + threeSecondsInMillis,AlarmManager.INTERVAL_DAY, pendingIntent);
+
+            }
+            else {
+                Toast.makeText(this, "Time is not set!", Toast.LENGTH_SHORT).show();
+            }
+
+        });
+
+    }
+
+    private void createNotificationChannel() {
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "notificationChannel";
+            String description = "Channel for motivational notification";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel("notcha1", name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    /*
+    * //notification tests
+
+        Button notifyButton = findViewById(R.id.settingsButton);
+
+        notifyButton.setOnClickListener(view -> {
+            Toast.makeText(this, "Reminder set!", Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(MainActivity.this, ReminderBroadcast.class);
+
+
+            PendingIntent pendingIntent;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                pendingIntent = PendingIntent.getBroadcast(this,
+                        0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+
+            }else {
+                pendingIntent = PendingIntent.getBroadcast(this,
+                        0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            }
+
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+
+            long timeAtButtonClick = System.currentTimeMillis();
+            long threeSecondsInMillis = 1000 * 1;
+
+            alarmManager.set(AlarmManager.RTC_WAKEUP, timeAtButtonClick + threeSecondsInMillis, pendingIntent);
+
+        });
+
+        //end notification tests
+    *
+    * */
+}

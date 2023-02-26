@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Motivational Quotes</string>
+    <string name="quoteText"></string>
+    <string name="authorText"></string>
+    <string name="newQuoteButton">New quote</string>
+    <string name="button">Notify Me!</string>
+    <string name="select_an_hour_for_a_reminder">Select an hour for a motivational reminder!</string>
+    <string name="back">back</string>
+    <string name="settings">settings</string>
+    <string name="select_time">Select time</string>
+</resources>
